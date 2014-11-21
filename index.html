@@ -220,27 +220,29 @@
 
 <!-- geospatial view -->
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Geospatial View</h3>
-  </div>
-  <div class="panel-body">
-    <p>By default, an empty US map is displayed. To view delay statistics for airports and flight routes, please kindly download the two processed files, <b>NODE.csv</b> and <b>EDGE.csv</b> from <a href="https://github.com/Laksa/Just-On-Time">our Github repository</a> and upload both of them by using the button below.</p>
-    <input type="file" id="input" class="button" multiple>
-  </div>
+    <div class="panel-heading">
+        <h3 class="panel-title">Geospatial View</h3>
+    </div>
+    <div class="panel-body">
+        <p>By default, an empty US map is displayed. To view delay statistics for airports and flight routes, please kindly download the two processed files, <b>NODE.csv</b> and <b>EDGE.csv</b> from <a href="https://github.com/Laksa/Just-On-Time">our Github repository</a> and upload both of them by using the button below.</p>
+        <input type="file" id="input" class="button" multiple>
+    </div>
 </div>
 <div id="map"></div><br/>
 
 <!-- calendar view -->
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Calendar View</h3>
-  </div>
-  <div class="panel-body">
-    <p>A simple write up about calendar view. @Ngoc</p></div>
+    <div class="panel-heading">
+        <h3 class="panel-title">Calendar View</h3>
+    </div>
+    <div class="panel-body">
+        <p>
+Users are able to see the time frame for which flight delays occur. Heat map is incorporated so that users can tell the days/ weeks/ months with most severe flight delay.
+        </p></div>
 </div>
 <div>        
-    <select onchange ="load(this.value)" onload="chartTitle()" >
-        <option value="0" selected="selected" >Total Cancellation </option>
+    <select name="calendar_select" id="calendar_select" onchange ="load(this.value)" onload="chartTitle()" >
+        <!--<option value="0" selected="selected" >Total Cancellation </option>-->
         <option value="1" >Arrival Delay </option>
         <option value="2" >Departure Delay </option>                
     </select>
@@ -249,23 +251,25 @@
 
 <!-- crossfilter view -->
 <div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Crossfilter View</h3>
-  </div>
-  <div class="panel-body">
-    <p>A simple write up about crossfilter view. @Yihao</p>
-    <div class="dc-data-count" style="float: center;">
-        <h2>High-Dimensional Analysis of Delay Data - 
-            <span>
-                <span class="filter-count"></span>
-                selected out of 
-                <span class="total-count"></span>
-                records | 
-                <a href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
-            </span>
-        </h2>
+    <div class="panel-heading">
+        <h3 class="panel-title">Crossfilter View</h3>
     </div>
-  </div>
+    <div class="panel-body">
+        <p>
+Cross-filter allows users to zoom in a particular selected period of time and examine the details of flight delays during such periods. These details include causes of flight delay, the extent of delay and individual airlines' responsibility. 
+        </p>
+        <div class="dc-data-count" style="float: center;">
+            <h2>High-Dimensional Analysis of Delay Data - 
+                <span>
+                    <span class="filter-count"></span>
+                    selected out of 
+                    <span class="total-count"></span>
+                    records | 
+                    <a href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
+                </span>
+            </h2>
+        </div>
+    </div>
 </div>
 <div class='container' style='font: 12px sans-serif; width: 110%'>
     <div class='row'>
@@ -367,6 +371,169 @@
             maxZoom: 18
         }).addTo(map);
         main(map);
+
+        var width = 960,
+                height = 750,
+                cellSize = 25; // cell size
+
+        //var no_months_in_a_row = Math.floor(width / (cellSize * 7 + 50));
+        var no_months_in_a_row = 4;
+        var shift_up = cellSize * 3;
+
+        var day = d3.time.format("%w"), // day of the week
+                day_of_month = d3.time.format("%e") // day of the month
+        day_of_year = d3.time.format("%j")
+        week = d3.time.format("%U"), // week number of the year
+                month = d3.time.format("%m"), // month number
+                year = d3.time.format("%Y"),
+                percent = d3.format(".1%"),
+                format = d3.time.format("%Y-%m-%d");
+
+
+        var minColor = 3300;
+        var maxColor = 9900;
+
+        var svg = d3.select("#calendar").selectAll("svg")
+                .data(d3.range(2014, 2015))
+                .enter().append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("class", "RdYlGn")
+                .append("g")
+
+        var rect = svg.selectAll(".day")
+                .data(function(d) {
+            return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        })
+                .enter().append("rect")
+                .attr("class", "day")
+                .attr("width", cellSize)
+                .attr("height", cellSize)
+                .attr("x", function(d) {
+            var month_padding = 1.2 * cellSize * 7 * ((month(d) - 1) % (no_months_in_a_row));
+            return day(d) * cellSize + month_padding;
+        })
+                .attr("y", function(d) {
+            var week_diff = week(d) - week(new Date(year(d), month(d) - 1, 1));
+            var row_level = Math.ceil(month(d) / (no_months_in_a_row));
+            return (week_diff * cellSize) + row_level * cellSize * 8 - cellSize / 2 - shift_up;
+        })
+                .datum(format);
+
+        var month_titles = svg.selectAll(".month-title")  // Jan, Feb, Mar and the whatnot
+                .data(function(d) {
+            return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        })
+                .enter().append("text")
+                .text(monthTitle)
+                .attr("x", function(d, i) {
+            var month_padding = 1.2 * cellSize * 7 * ((month(d) - 1) % (no_months_in_a_row));
+            return month_padding;
+        })
+                .attr("y", function(d, i) {
+            var week_diff = week(d) - week(new Date(year(d), month(d) - 1, 1));
+            var row_level = Math.ceil(month(d) / (no_months_in_a_row));
+            return (week_diff * cellSize) + row_level * cellSize * 8 - cellSize - shift_up;
+        })
+                .attr("class", "month-title")
+                .attr("d", monthTitle);
+
+        var year_titles = svg.selectAll(".year-title")  // Jan, Feb, Mar and the whatnot
+                .data(function(d) {
+            return d3.time.years(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+        })
+                .enter().append("text")
+                .text(yearTitle)
+                .attr("x", function(d, i) {
+            return width / 2 - 100;
+        })
+                .attr("y", function(d, i) {
+            return cellSize * 5.5 - shift_up;
+        })
+                .attr("class", "year-title")
+                .attr("d", yearTitle);
+
+        //  Tooltip Object
+        var tooltip = d3.select("body")
+                .append("div").attr("id", "tooltip")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .text("a simple tooltip");
+
+        load(1);
+
+        function load(value) {
+            d3.csv("calendar.csv", function(error, csv) {
+                var data = d3.nest()
+                        .key(function(d) {
+                    return d.Date;
+                })
+                        .rollup(function(d) {
+                    if (value == 1) {
+                        return d[0].ArrDelay;
+                    } else if (value == 2) {
+                        return d[0].DeptDelay;
+                    } else {
+                        return d[0].TotalCancel;
+                    }
+                })
+                        .map(csv);
+
+
+                rect.filter(function(d) {
+                    return d in data;
+                })
+                        .attr("class", function(d) {
+                    return "day " + color(data[d]);
+                })
+                        .select("title")
+                        .text(function(d) {
+                    return d + ": " + percent(data[d]);
+                });
+
+
+                //  Tooltip
+                rect.on("mouseover", mouseover);
+                rect.on("mouseout", mouseout);
+                function mouseover(d) {
+                    tooltip.style("visibility", "visible");
+                    var percent_data = (data[d] !== undefined) ? (data[d]) : (0);
+                    var purchase_text = d + ": " + percent_data;
+
+                    tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                    tooltip.html(purchase_text)
+                            .style("left", (d3.event.pageX) + 30 + "px")
+                            .style("top", (d3.event.pageY) + "px");
+                }
+                function mouseout(d) {
+                    tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    var $tooltip = $("#tooltip");
+                    $tooltip.empty();
+                }
+            });
+        }
+
+
+        var color = d3.scale.quantize()
+                .domain([minColor, maxColor])
+                .range(d3.range(11).map(function(d) {
+            return "q" + d + "-11";
+        }));
+
+        function dayTitle(t0) {
+            return t0.toString().split(" ")[2];
+        }
+        function monthTitle(t0) {
+            return t0.toLocaleString("en-us", {month: "long"});
+        }
+        function yearTitle(t0) {
+            return t0.toString().split(" ")[3];
+        }
 
 </script>
 
