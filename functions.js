@@ -40,9 +40,55 @@ function init_map(map, nodes, edges) {
         maxZoom: 18
     }).addTo(map);
     // ===================================================================================================
+    function onEachEdge(feature, layer) {
+        if (feature.properties.COUNT > 100) {
+            var count = feature.properties.COUNT;
+            var origin = feature.properties.ORIGIN_LABEL;
+            var destination = feature.properties.DESTINATION_LABEL;
+            layer.bindPopup("There are " + count + " delayed flights from " + origin + " to " + destination);
+        }
+    }
+    L.geoJson(edges, {
+        onEachFeature: onEachEdge,
+        style: function(feature) {
+            var num = parseFloat(feature.properties.COUNT);
+            if (num > 200) {
+                return {
+                    "color": "#FF0000",
+                    "weight": num / 40,
+                    "opacity": 0.6
+                };
+            } else if (num > 150) {
+                return {
+                    "color": "#F88017",
+                    "weight": num / 60,
+                    "opacity": 0.4
+                };
+            } else if (num > 100) {
+                return {
+                    "color": "#FFFF00",
+                    "weight": num / 80,
+                    "opacity": 0.2
+                };
+            } else if (num > 50) {
+                return {
+                    "color": "#CCFB5D",
+                    "weight": num / 80,
+                    "opacity": 0.1
+                };
+            }
+            return {
+                "color": "#00FF00",
+                "weight": num / 80,
+                "opacity": 0.1
+            };
+        }
+    }).addTo(map);
+    // ===================================================================================================
     function onEachNode(feature, layer) {
         if (feature.properties && feature.properties.out_num) {
-            layer.bindPopup(feature.properties.LABEL);
+            var num = feature.properties.out_num
+            layer.bindPopup(feature.properties.LABEL + " is the source of " + num + " departure delays");
         }
     }
     var geojsonMarkerOptions = {
@@ -61,62 +107,18 @@ function init_map(map, nodes, edges) {
         style: function(feature) {
             var num = parseFloat(feature.properties.out_num);
             if (num > 3000) {
-                return {fillColor: "#FF0000"};
+                return {fillColor: "#FF0000", radius: num / 400};
             } else if (num > 2000) {
-                return {fillColor: "#F88017"};
+                return {fillColor: "#F88017", radius: num / 400};
             } else if (num > 1000) {
-                return {fillColor: "#FFFF00"};
+                return {fillColor: "#FFFF00", radius: num / 400};
             } else if (num > 500) {
-                return {fillColor: "#CCFB5D"};
+                return {fillColor: "#CCFB5D", radius: num / 400};
             }
-            return {fillColor: "#00FF00"};
+            return {fillColor: "#00FF00", radius: num / 400};
         }
     }).addTo(map);
-    // ===================================================================================================
-    function onEachEdge(feature, layer) {
-        if (feature.properties && feature.properties.COUNT) {
-            var count = feature.properties.COUNT;
-            var origin = feature.properties.ORIGIN_ID;
-            var destination = feature.properties.DESTINATION_ID;
-            layer.bindPopup("There are " + count + " delayed flights from " + origin + " to " + destination);
-        }
-    }
-    L.geoJson(edges, {
-        onEachFeature: onEachEdge,
-        style: function(feature) {
-            var num = parseFloat(feature.properties.COUNT);
-            if (num > 200) {
-                return {
-                    "color": "#FF0000",
-                    "weight": 2,
-                    "opacity": 0.65
-                };
-            } else if (num > 150) {
-                return {
-                    "color": "#F88017",
-                    "weight": 1,
-                    "opacity": 0.65
-                };
-            } else if (num > 100) {
-                return {
-                    "color": "#FFFF00",
-                    "weight": 0.5,
-                    "opacity": 0.65
-                };
-            } else if (num > 50) {
-                return {
-                    "color": "#CCFB5D",
-                    "weight": 0.2,
-                    "opacity": 0.65
-                };
-            }
-            return {
-                "color": "#00FF00",
-                "weight": 0.1,
-                "opacity": 0.65
-            };
-        }
-    }).addTo(map);
+    
 }
 
 
@@ -153,7 +155,7 @@ function node(csv) {
 function edge(csv) {
     var lines = csv.split("\n");
     var result = [];
-    var headers = ["ORIGIN_ID", "DESTINATION_ID", "ORIGIN_N", "ORIGIN_E", "DESTINATION_N", "DESTINATION_E", "COUNT"];
+    var headers = ["ORIGIN_ID", "ORIGIN_LABEL", "DESTINATION_ID", "DESTINATION_LABEL", "ORIGIN_N", "ORIGIN_E", "DESTINATION_N", "DESTINATION_E", "COUNT"];
     for (var i = 1; i < lines.length; i++) {
         var properties = {};
         var currentline = lines[i].split(",");
@@ -191,7 +193,7 @@ function bankai() {
     dataTable = dc.dataTable("#dc-table-graph");
 
     //load data from a csv file 
-    d3.csv("crossfilter.csv", function(data) {
+    d3.csv("FINAL.csv", function(data) {
 
         //format our data 
         function parseDate(d) {
@@ -338,9 +340,36 @@ function bankai() {
             return d.carrier;
         });
 
-        var airlines = airline.group().reduceSum(function(d) {
-            return d.delay;
-        });
+        /*var  airlines = airline.group().reduceSum(function (d){
+         return d.delay;
+         });*/
+
+        var airlines = airline.group().reduce(
+                function(p, v) {
+                    p.delay = p.delay + v.delay;
+                    p.count = p.count + 1;
+                    p.carrier = p.carrier + v.carrier;
+                    p.avgDelay = Math.floor(p.delay / p.count);
+                    return p;
+                },
+                function(p, v) {
+                    p.delay = p.delay - v.delay;
+                    p.count = p.count - 1;
+                    p.carrier = p.carrier - v.carrier;
+                    p.avgDelay = Math.floor(p.delay / p.count);
+                    return p;
+                },
+                function() {
+
+                    return {
+                        delay: 0,
+                        count: 0,
+                        carrier: 0,
+                        avgDelay: 0
+                    };
+                }
+
+        );
 
         //For indivdual airport delays
         var airport = facts.dimension(function(d) {
@@ -446,7 +475,7 @@ function bankai() {
         iDelay
                 .width(450)
                 .height(150)
-                .margins({top: 10, right: 15, bottom: 20, left: 50})
+                .margins({top: 10, right: 20, bottom: 20, left: 50})
                 .transitionDuration(10)
                 .gap(1)
                 .dimension(delayByDay)
@@ -478,7 +507,7 @@ function bankai() {
                 .renderTitle(true)
                 .title(function(d) {
 
-            return  getDayofWeek(d.data.key) + " " + formatDate2(d.data.key) + "\n" + d.data.value.CarrierDelay;
+            return  getDayofWeek(d.data.key) + " " + formatDate2(d.data.key) + "\n" + d.data.value.CarrierDelay
 
         })
                 .title(function(d) {
@@ -502,15 +531,18 @@ function bankai() {
                 .dimension(delay)
                 .group(delays)
                 .renderArea(true)
-                .brushOn(false)			// added for title
+                //.brushOn(false)			// added for title
                 .title(function(d) {
             return ("Arrival Delay: " + (d.data.key) + " minutes")
                     + "\nFrequency: " + d.data.value;
         })
                 .elasticY(true)
-                .elasticX(true)
-                .x(d3.scale.linear().domain([0, 1600]))
+                //.elasticX(true)
+                .x(d3.scale.linear().domain([15, 200]))
                 .xAxis();
+
+
+
 
         //For day of week
         dayOfWeekChart.width(300)
@@ -531,20 +563,25 @@ function bankai() {
         //For sum of delay for each airline
         airlineDelayChart.width(320)
                 .height(240)
-                .margins({top: 10, right: 10, bottom: 20, left: 50})
+                .margins({top: 10, right: 10, bottom: 20, left: 60})
                 .dimension(airline)
                 .group(airlines)
                 .transitionDuration(10)
+                .valueAccessor(function(p) {
+
+            return p.value.avgDelay;
+        })
+
                 .renderTitle(true)
                 .title(function(d) {
-            return  d.data.key + ": " + d.data.value + " minutes";
+            return  d.data.key + ": " + d.data.value.avgDelay + " minutes";
         })
                 .centerBar(true)
                 .gap(1)
                 .x(d3.scale.ordinal().domain(["", "AA", "AS", "B6", "DL", "EV", "UA", "US", "OO", "VX", "WN", "F9", "FL", "HA", "MQ"]))
                 //.x(d3.scale.ordinal().domain(data.map(function (d) {return d.carrier; })))
                 .xUnits(dc.units.ordinal)
-                .elasticY(true)
+                .y(d3.scale.linear().domain([0, 200]))
                 .xAxis().tickFormat();
 
         //For sum of delay for each airport
@@ -594,7 +631,7 @@ function bankai() {
 
 
 
-        //Render the thing
+        //Render the shit
         dc.renderAll();
 
 
