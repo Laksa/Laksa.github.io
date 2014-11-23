@@ -45,7 +45,7 @@ function init_map(map, nodes, edges) {
             var count = feature.properties.COUNT;
             var origin = feature.properties.ORIGIN_LABEL;
             var destination = feature.properties.DESTINATION_LABEL;
-            layer.bindPopup("There are " + count + " delayed flights from " + origin + " to " + destination);
+            layer.bindPopup("<b>From:</b> " + origin + " Airport<br/> <b>To:</b> " + destination + " Airport<br/> <b>No. of Departure Delays:</b> " + count + " flights");
         }
     }
     L.geoJson(edges, {
@@ -55,19 +55,19 @@ function init_map(map, nodes, edges) {
             if (num > 200) {
                 return {
                     "color": "#FF0000",
-                    "weight": num / 40,
+                    "weight": num / 20,
                     "opacity": 0.6
                 };
             } else if (num > 150) {
                 return {
                     "color": "#F88017",
-                    "weight": num / 60,
+                    "weight": num / 40,
                     "opacity": 0.4
                 };
             } else if (num > 100) {
                 return {
                     "color": "#FFFF00",
-                    "weight": num / 80,
+                    "weight": num / 60,
                     "opacity": 0.2
                 };
             } else if (num > 50) {
@@ -79,18 +79,34 @@ function init_map(map, nodes, edges) {
             }
             return {
                 "color": "#00FF00",
-                "weight": num / 80,
+                "weight": num / 100,
                 "opacity": 0.1
             };
         }
     }).addTo(map);
     // ===================================================================================================
+    var in_or_out = document.getElementById("in_or_out");
+    var input = in_or_out.options[in_or_out.selectedIndex].value;
+
     function onEachNode(feature, layer) {
-        if (feature.properties && feature.properties.out_num) {
-            var num = feature.properties.out_num
-            layer.bindPopup(feature.properties.LABEL + " is the source of " + num + " departure delays");
+        var num;
+        var cat;
+        if (input === "in") {
+            num = feature.properties.in_num;
+            cat = " destination of ";
+        } else {
+            num = feature.properties.out_num;
+            cat = " origin of ";
         }
+        var label = feature.properties.LABEL;
+        var descr = "is the" + cat + num + " departure delays.";
+        layer.bindPopup();
+        layer.bindPopup($('<a href="#" class="special_link">' + label + '</a>').click(function() {
+            update_airport(label, descr);
+        })[0]);
+
     }
+
     var geojsonMarkerOptions = {
         radius: 6,
         fillColor: "#ff7800",
@@ -105,7 +121,13 @@ function init_map(map, nodes, edges) {
             return L.circleMarker(latlng, geojsonMarkerOptions);
         },
         style: function(feature) {
-            var num = parseFloat(feature.properties.out_num);
+            var num;
+            if (input === "in") {
+                num = parseFloat(feature.properties.in_num);
+            } else {
+                num = parseFloat(feature.properties.out_num);
+            }
+
             if (num > 3000) {
                 return {fillColor: "#FF0000", radius: num / 400};
             } else if (num > 2000) {
@@ -115,10 +137,11 @@ function init_map(map, nodes, edges) {
             } else if (num > 500) {
                 return {fillColor: "#CCFB5D", radius: num / 400};
             }
+
             return {fillColor: "#00FF00", radius: num / 400};
         }
     }).addTo(map);
-    
+
 }
 
 
