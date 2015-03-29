@@ -1,564 +1,389 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>IS428 - US Flight Delay Analysis</title>
+    <!DOCTYPE html>
+<html lang="en">
 
-        <script src='d3.v3.js'></script>
-        <script src='crossfilter.js'></script>
-        <script src='dc.js'></script>
-        <link href='http://dc-js.github.io/dc.js/css/dc.css' rel='stylesheet' type='text/css'>
+<head>
 
-        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-        <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-
-        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
-        <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-
-        <style>
-
-            @import url(http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,700);
-
-            body {
-                font-family: "Helvetica Neue";
-                margin: 40px auto;
-                width: 960px;
-                min-height: 2000px;
+    <title>DiceAndSlice</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/sb-admin.css" rel="stylesheet">
+    <link href="css/dc.css" rel="stylesheet">
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+          .d3-tip {
+                line-height: 1;
+                font-weight: bold;
+                padding: 12px;
+                background: rgba(0, 0, 0, 0.8);
+                color: #fff;
+                border-radius: 8px;
             }
 
-            #map { 
-                height: 450px; 
-                width: 70%;
-                float: left;
-                margin-right: 2%;
+            /* Creates a small triangle extender for the tooltip */
+            .d3-tip:after {
+                box-sizing: border-box;
+                display: inline;
+                font-size: 10px;
+                width: 100%;
+                line-height: 1;
+                color: rgba(0, 0, 0, 0.8);
+                content: "\25BC";
+                position: absolute;
+                text-align: center;
             }
 
-            #body {
-                position: relative;
+            /* Style northward tooltips differently */
+            .d3-tip.n:after {
+                margin: -1px 0 0 0;
+                top: 100%;
+                left: 0;
             }
+           
+    </style>
+</head>
 
-            footer {
-                padding: 2em 0 1em 0;
-                font-size: 12px;
-            }
 
-            h1 {
-                font-size: 96px;
-                margin-top: .3em;
-                margin-bottom: 0;
-            }
+<body>
+    
+    <div id="wrapper">
 
-            h1 + h2 {
-                margin-top: 0;
-            }
-
-            h2 {
-                font-weight: 400;
-                font-size: 28px;
-            }
-
-            h1, h2 {
-                font-family: "Yanone Kaffeesatz";
-                text-rendering: optimizeLegibility;
-            }
-
-            #body > p {
-                line-height: 1.5em;
-                width: 640px;
-                text-rendering: optimizeLegibility;
-            }
-
-            #charts {
-                padding: 10px 0;
-            }
-
-            .chart {
-                display: inline-block;
-                height: 151px;
-                margin-bottom: 20px;
-            }
-
-            .reset {
-                padding-left: 1em;
-                font-size: smaller;
-                color: #ccc;
-            }
-
-            #calendar{
-                width: 28%;
-                margin: 0 auto;
-                float: left;
-            }
-            .background {
-                fill: #eee;
-            }
-
-            line {
-                stroke: #fff;
-            }
-
-            text.active {
-                fill: red;
-            }
-
-            .day {
-                fill: #fff;
-                stroke: #ccc;
-            }
-
-            .month {
-                fill: none;
-                stroke: #fff;
-                stroke-width: 4px;
-            }
-            .year-title {
-                font-size: 1.5em;
-            }
-
-            /* color ranges */
-            .RdYlGn .q0-11{fill:#ffffcc}
-            .RdYlGn .q1-11{fill:#ffeda0}
-            .RdYlGn .q2-11{fill:#fed976}
-            .RdYlGn .q3-11{fill:#feb24c}
-            .RdYlGn .q4-11{fill:#fd8d3c}
-            .RdYlGn .q5-11{fill:#fc4e2a}
-            .RdYlGn .q6-11{fill:#fc4e2a}
-            .RdYlGn .q7-11{fill:#fc4e2a}
-            .RdYlGn .q8-11{fill:#e31a1c}
-            .RdYlGn .q9-11{fill:#bd0026}
-            .RdYlGn .q10-11{fill:#800026}
-
-            /* hover info */
-            #tooltip {
-                background-color: #fff;
-                border: 2px solid #ccc;
-                padding: 10px;
-            }
-        </style>
-
-    </head>
-    <body>
-
-        <a href="http://transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time"><img src="logo.png" width="30%" height="30%"></a>
-
-        <h1>Just On Time</h1>
-
-        <nav class="navbar navbar-default" role="navigation">
-            <div class="container-fluid">
-                <!-- Brand and toggle get grouped for better mobile display -->
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="#"><img alt="Brand" src="flight.png" style="max-width:35px; margin-top: -7px"></a>
-                </div>
-
-                <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav">
-                        <!--                        <li class="active"><a href="https://github.com/Laksa/Just-On-Time">Github Repository</a></li>-->
-                        <li><a href="https://github.com/Laksa/Just-On-Time">Github Repository</a></li>
-                        <li><a href="http://transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time">Data Source</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Another action</a></li>
-                                <li><a href="#">Something else here</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">Separated link</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">One more separated link</a></li>
-                            </ul>
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">Dice and Slice </a> 
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> G1T4 <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Boyang</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Jovin</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Wei Yin</a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-fw fa-user"></i> Yi Hao</a>
                         </li>
                     </ul>
-                    <form class="navbar-form navbar-left" role="search">
-                        <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Search">
-                        </div>
-                        <button type="submit" class="btn btn-default">Submit</button>
-                    </form>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="#">Link</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Another action</a></li>
-                                <li><a href="#">Something else here</a></li>
-                                <li class="divider"></li>
-                                <li><a href="#">Separated link</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div><!-- /.navbar-collapse -->
-            </div><!-- /.container-fluid -->
+                </li>
+                
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li>
+                        <a href="about.html"><i class="fa fa-fw fa-info"></i>About</a>
+                    </li>
+                    <li class="active">
+                        <a href="index.html"><i class="fa fa-fw fa-dashboard"></i>Dashboard</a>
+                    </li>
+                
+                    <li>
+                        <a href="table1.html"><i class="fa fa-fw fa-table"></i> Table</a>
+                    </li>
+                 </ul>
+            </div>
+            <!-- /.navbar-collapse -->
         </nav>
 
-        <h2>Background</h2>
-        <p>
-            <b>Just-On-Time</b> is a visual analytics application built for <a href="https://wiki.smu.edu.sg/1415t1is428/Main_Page">IS428 Visual Analytics for Business Intelligence</a>. Just-On-Time attempts to provide readers of this page a better understanding of US flight delay situation for selected month(s), by utilising various data visualisation techniques taught throughout IS428 course. For more information about this project, check out our <a href="https://wiki.smu.edu.sg/1415t1is428/Just_On_Time_Proposal">project wiki page</a>. 
-        </p>
-        <p>
-            The data used in this project was taken from Research and Innovative Technology Administration – Bureau of Transportation Statistics, USA (RITA). Click <a href="http://transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time">here</a> for raw data. Alternatively, click the airplane picture above. 
-        </p>
+        <div id="page-wrapper">
 
-        <br/>
+            <div class="container-fluid">
 
-        <!-- geospatial view -->
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">Geospatial View</h3>
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            2013 US Airline Carbon Emission 
+                            <a href= "javascript:dc.filterAll(); dc.renderAll();" class="btn btn-danger">Reset All</a>
+                            <a href= "javascript:generateCharts();" class="btn btn-primary">Submit</a>
+                        </h1>
+                    
+                        
+                        <div class="form-group" >
+                            <div class="row">
+                             <div class="col-lg-3 col-md-6">
+                                 <label>Tier 1 Emission Tax: </label>
+                                 <select id="tier1" class="form-control" >
+                                    <option value ="1">Default = $1 * Total Emission</option>
+                                    <option value="1">$1 * Total Emission</option>
+                                    <option value="2">$2 * Total Emission</option>
+                                    <option value="3">$3 * Total Emission</option>
+                                    <option value="4">$4 * Total Emission</option>
+                                    <option value ="5">$5 * Total Emission</option>
+                                </select>
+                               
+                            </div>
+                             
+                            <div class="col-lg-3 col-md-6">
+                                 <label>Tier 2 Emission Tax: </label>
+                                 <select id="tier2" class="form-control" >
+                                    <option value="1">Default = $1 * Total Emission</option>
+                                    <option value="1">$1 * Total Emission</option>
+                                    <option value="2">$2 * Total Emission</option>
+                                    <option value="3">$3 * Total Emission</option>
+                                    <option value="4">$4 * Total Emission</option>
+                                    <option value="5">$5 * Total Emission</option>
+                                </select>
+                               
+                            </div>
+                            
+                             <div class="col-lg-3 col-md-6">
+                                 <label>Tier 3 Emission Tax: </label>
+                                 <select id="tier3" class="form-control" >
+                                    <option value="1">Default = $1 * Total Emission</option>
+                                    <option value="1">$1 * Total Emission</option>
+                                    <option value="2">$2 * Total Emission</option>
+                                    <option value= "3">$3 * Total Emission</option>
+                                    <option value ="4">$4 * Total Emission</option>
+                                    <option value ="5">$5 * Total Emission</option>
+                                </select>
+                               
+                            </div>
+                             
+                            <div class="col-lg-3 col-md-6">
+                                 <label>Tier 4 Emission Tax: </label>
+                                 <select id="tier4" class="form-control" >
+                                     <option value="1">Default = $1 * Total Emission</option>
+                                    <option value=1>$1 * Total Emission</option>
+                                    <option value="2">$2 * Total Emission</option>
+                                    <option value="3">$3 * Total Emission</option>
+                                    <option value="4">$4 * Total Emission</option>
+                                    <option value="5">$5 * Total Emission</option>
+                                </select>
+                               
+                            </div> 
+                         </div>
+                      </div>
+                       
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <!-- /.row -->
+
+                <div class="row">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-plane fa-5x"></i>
+                                    </div>
+                                    <div id='dc-airline-count' class="col-xs-9 text-right">
+                                        <div class="huge">
+                                        <span class='number-display'></span>
+                                        </div>
+                                        <div>US Carriers (Number)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-red">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-cloud fa-5x"></i>
+                                    </div>
+                                    <div id='dc-emission-count' class="col-xs-9 text-right">
+                                        <div class="huge">
+                                        <span class='number-display'></span>
+                                        </div>
+                                        <div> Emission (Tonnes)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-road fa-5x"></i>
+                                    </div>
+                                     <div id='dc-distance-count' class="col-xs-9 text-right">
+                                        <div class="huge">
+                                        <span class='number-display'></span>
+                                        </div>
+                                        <div> Distance (Km)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="fa fa-dollar fa-5x"></i>
+                                    </div>
+                                    <div id='dc-profit-count' class="col-xs-9 text-right">
+                                        <div class="huge">
+                                        <span class='number-display'></span>
+                                        </div>
+                                        <div> Pre-Tax Profit (USD)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+               
+                <!-- /.row -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-circle fa-fw"></i>Emission vs Distance by Airline Bubble Chart <a href="#dc-airline-bubble" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
+                                </a>
+                                    <span><a href="javascript:airlineBubbleChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset </a>    
+                                    </span></h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id="dc-airline-bubble"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-red">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i>Emission By Airline Column Chart <a href="#dc-airline-emission" data-toggle="collapse" class="btn btn-sm btn-default minimize-box">
+                                    <i class="fa fa-minus fa-fw"></i>
+                                </a> 
+                                <a href="javascript:airlineEmissionChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset</a>        
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            
+                            <div id="dc-airline-emission"></div>
+                          
+                       </div>
+                    </div>
+                    
+                </div>
+                </div>
+                <div class='row'>
+                    <div class="col-lg-12">
+                        <div class="panel panel-yellow">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>Distance by Airline Column Chart <a href="#dc-airline-distance" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
+                                </a> 
+                                    <a href="javascript:airlineDistanceChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset</a>
+                                    <a href="javascript:;" class="btn btn-default btn-sm">About</a>
+                                </h3>
+                            </div>
+                            <div class="panel-body">
+                               <div id='dc-airline-distance'></div>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-green">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><i class="fa fa-line-chart fa-fw"></i>Profit Sensitivity Analysis by Airline Composite Line Chart <a href="#dc-airline-compositeLine" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
+                                </a>
+                                       
+                                </h3>
+                            </div>
+                            <div class="panel-body">
+                                <div id='dc-airline-compositeLine'></div>
+                            </div>
+                                
+                        </div>
+                        </div>
+                </div>
+                
+                <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><i class="fa fa-fw fa-table"></i>Data Table 
+                            <a href="#dc-table-graph" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
+                                </a>          
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="body collapse in">
+                                    <table id="dc-table-graph" class="table table-bordered table-hover table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Airline ID</th>
+                                                <th>Airline Name</th>
+                                                <th>Pre-Tax Profit</th>
+                                                <th>Tax</th>
+                                                <th>Post-Tax Profit</th>
+                                                <th>Emission</th>
+                                                <th>Distance</th>
+                                                
+                                                
+                                             </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                       </div>
+                    </div> 
+                </div>
+                </div>    
+                
             </div>
-            <div class="panel-body">
-                <p>By default, an empty US map is displayed. Before importing the data, please choose whether you want to look at delay incidences for each airport as <b>origin</b> of delays or as <b>destination</b> of delays.</p>
-                <select name="in_or_out" id="in_or_out">
-                    <option value="out" selected="selected">Airport as Origin of Delays</option>
-                    <option value="in" >Airport as Destination of Delays</option>                
-                </select>
-                <br><br/>
-                <p>To view delay statistics for airports and flight routes, please kindly download the two processed files, <b>NODE.csv</b> and <b>EDGE.csv</b> from <a href="https://github.com/Laksa/Just-On-Time">our Github repository</a> and upload both of them by using the button below.</p>
-                <input type="file" id="input" class="button" multiple>
+                <!-- /.row -->
+
             </div>
+            <!-- /.container-fluid -->
+
         </div>
+        <!-- /#page-wrapper -->
 
-        <div id="map"></div>
-        <!-- calendar view -->
-        <div class="panel panel-default" style="float: left; width: 28%; height: 450px;">
-            <div class="panel-heading">
-                <h3 class="panel-title">Calendar View</h3>
-            </div>
-            <div class="panel-body">
-                <p>
-                    Please click on the airport of your choice and view arrival / departure delay in the form of a calendar.
-                </p>
-                <div id="airport_name"><b>No airport selected</b></div>
-                <div id="airport_descr">No statistics available</div>
-                <br/>
-                <div>Select a delay type:
-                    <select name="calendar_select" id="calendar_select" onchange ="load(this.value)" onload="chartTitle()">
-                        <!--<option value="0" selected="selected" >Total Cancellation </option>-->
-                        <option value="1" >Arrival Delay </option>
-                        <option value="2" >Departure Delay </option>                
-                    </select>
-                </div>
-                <div id="calendar" class="clearfix"></div>
-            </div>
-        </div>
+  
+    <!-- /#wrapper -->
 
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/d3.v3.min.js"></script>
+    <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+    <script src="js/d3.tip.v0.6.3.js"></script>
+    <script src="js/crossfilter.js"></script>
+    <script src="js/dc.js"></script>
+    <script src="main.js"></script>
+    <script>
+        generateCharts();
 
-        <!-- crossfilter view -->
-        <div class="panel panel-default" style="float: left;">
-            <div class="panel-heading">
-                <h3 class="panel-title">Crossfilter View</h3>
-            </div>
-            <div class="panel-body">
-                <p>
-                    Cross-filter allows users to zoom in a particular selected period of time and examine the details of flight delays during such periods. These details include causes of flight delay, the extent of delay and individual airlines' responsibility. 
-                </p>
-                <div class="dc-data-count" style="float: center;">
-                    <h2>High-Dimensional Analysis of Delay Data - 
-                        <span>
-                            <span class="filter-count"></span>
-                            selected out of 
-                            <span class="total-count"></span>
-                            records | 
-                            <a href="javascript:dc.filterAll(); dc.renderAll();">Reset All</a>
-                        </span>
-                    </h2>
-                </div>
-            </div>
-        </div>
-        <div class='container' style='font: 12px sans-serif; width: 110%'>
-            <div class='row'>
-                <div class='span6' id='dc-totalDelay-chart'>
-                    <h4>
-                        Total arrival delay per day (minutes)
-                        <span>
-                            <a class="reset"
-                               href="javascript:totalDelayChart.filterAll();dc.redrawAll();"
-                               style="display: none;">
-                                reset
-                            </a>
-                        </span>
-                    </h4>
-                </div>
-                <div class='span6' id='iDelay'>
-                    <h4>
-                        Individual causes of arrival delay (minutes)
-                        <span>
-                            <a class="reset"
-                               href="javascript:iDelay.filterAll();dc.redrawAll();"
-                               style="display: none;">
-                                reset
-                            </a>
-                        </span>
-                    </h4>
-                </div>   
-            </div>
+    </script>
+</body>
 
-            <div class='row'>
-                <div class='span12' id='dc-flight-chart'>
-                    <h4>
-                        Number of delayed flights per day
-                        <span>
-                            <a class="reset"
-                               href="javascript:numberOfDelayedFlightChart.filterAll();dc.redrawAll();"
-                               style="display: none;">
-                                reset
-                            </a>
-                        </span>
-                    </h4>
-                </div>   
-            </div>
-            <div class='row'>
-                <div class='span4' id='dc-airlineDelay-chart'>
-                    <h4>Arrival delay of carriers (minutes)</h4>
-                </div> 
-                <div class='span4' id='dc-delayFrequency-chart'>
-                    <h4>
-                        Frequency of arrival delay (minutes)
-                        <span>
-                            <a class="reset"
-                               href="javascript:delayFrequencyChart.filterAll();dc.redrawAll();"
-                               style="display: none;">
-                                reset
-                            </a>
-                        </span>
-                    </h4>
-                </div>
-                <div class='span4' id='dc-newdayweek-chart'>
-                    <h4>
-                        Number of delayed flights for day of week
-                        <span>
-                            <a class="reset"
-                               href="javascript:dayOfWeekChart.filterAll();dc.redrawAll();"
-                               style="display: none;">
-                                reset
-                            </a>
-                        </span>
-                    </h4>
-                    <div class="clearfix"></div>
-                </div>  
-            </div>
-
-
-            <div class='row'>
-                <div class='span12'>
-                    <table class='table table-hover' id='dc-table-graph'>
-                        <thead>
-                            <tr class='header'>
-                                <th>Scheduled Arrival Time</th>
-                                <th>Carrier</th>
-                                <th>Origin Airport</th>
-                                <th>Destination Airport</th>
-                                <th>Arrival Delay (minutes)</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <script src="functions.js"></script>
-
-        <script>
-                    var corner_one = L.latLng(54.24437, 221.74805);
-                    var corner_two = L.latLng(15.927, 304.36523);
-                    var bounds = L.latLngBounds(corner_one, corner_two);
-
-                    var map = L.map('map', {
-                        maxBounds: bounds
-                    }).setView([40, 260], 4);
-                    L.tileLayer('http://{s}.tiles.mapbox.com/v3/realis.jo4acied/{z}/{x}/{y}.png', {
-                        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-                        maxZoom: 18
-                    }).addTo(map);
-                    main(map);
-
-                    var width = 300;
-                    var height = 250;
-                    var cellSize = 25; // cell size
-
-                    //var no_months_in_a_row = Math.floor(width / (cellSize * 7 + 50));
-                    var no_months_in_a_row = 1;
-                    var shift_up = cellSize * 3;
-
-                    var day = d3.time.format("%w"), // day of the week
-                            day_of_month = d3.time.format("%e") // day of the month
-                    day_of_year = d3.time.format("%j")
-                    week = d3.time.format("%U"), // week number of the year
-                            month = d3.time.format("%m"), // month number
-                            year = d3.time.format("%Y"),
-                            percent = d3.format(".1%"),
-                            format = d3.time.format("%Y-%m-%d");
-
-                    var svg = d3.select("#calendar").selectAll("svg")
-                            //.data(d3.range(2014.1,2014.2))
-                            .data([2014])
-                            .enter().append("svg")
-                            .attr("width", width)
-                            .attr("height", height)
-                            .attr("class", "RdYlGn")
-                            .append("g")
-
-                    var rect = svg.selectAll(".day")
-                            .data(function(d) {
-                        return d3.time.days(new Date("2014-01-01"), new Date("2014-01-31"));
-                    })
-                            .enter().append("rect")
-                            .attr("class", "day")
-                            .attr("width", cellSize)
-                            .attr("height", cellSize)
-                            .attr("x", function(d) {
-                        var month_padding = 1.2 * cellSize * 7 * ((month(d) - 1) % (no_months_in_a_row));
-                        return day(d) * cellSize + month_padding;
-                    })
-                            .attr("y", function(d) {
-                        var week_diff = week(d) - week(new Date(year(d), month(d) - 1, 1));
-                        var row_level = Math.ceil(month(d) / (no_months_in_a_row));
-                        return (week_diff * cellSize) + row_level * cellSize * 8 - cellSize / 2 - shift_up;
-                    })
-                            .datum(format);
-
-                    var month_titles = svg.selectAll(".month-title")  // Jan, Feb, Mar and the whatnot
-                            .data(function(d) {
-                        return d3.time.months(new Date("2014-01-01"), new Date("2014-01-31"));
-                    })
-                            .enter().append("text")
-                            .text(monthTitle)
-                            .attr("x", function(d, i) {
-                        var month_padding = 1.2 * cellSize * 7 * ((month(d) - 1) % (no_months_in_a_row));
-                        return month_padding;
-                    })
-                            .attr("y", function(d, i) {
-                        var week_diff = week(d) - week(new Date(year(d), month(d) - 1, 1));
-                        var row_level = Math.ceil(month(d) / (no_months_in_a_row));
-                        return (week_diff * cellSize) + row_level * cellSize * 8 - cellSize - shift_up;
-                    })
-                            .attr("class", "month-title")
-                            .attr("d", monthTitle);
-
-                    var year_titles = svg.selectAll(".year-title")  // Jan, Feb, Mar and the whatnot
-                            .data(function(d) {
-                        return d3.time.years(new Date("2013-01-01"), new Date("2014-01-01"));
-                    })
-                            .enter().append("text")
-                            .text(yearTitle)
-                            .attr("x", function(d, i) {
-                        return width / 2 - 100;
-                    })
-                            .attr("y", function(d, i) {
-                        return cellSize * 5.5 - shift_up;
-                    })
-                            .attr("class", "year-title")
-                            .attr("d", yearTitle);
-
-                    //  Tooltip Object
-                    var tooltip = d3.select("body")
-                            .append("div").attr("id", "tooltip")
-                            .style("position", "absolute")
-                            .style("z-index", "10")
-                            .style("visibility", "hidden")
-                            .text("a simple tooltip");
-
-                    load(1);
-
-                    function update_airport(label, descr) {
-                        document.getElementById("airport_name").innerHTML = "<b>" + label + "</b>";
-                        document.getElementById("airport_descr").innerHTML = descr;
-                        var e = document.getElementById("calendar_select");
-                        var input = e.options[e.selectedIndex].value;
-                        load(input);
-                    }
-
-                    function load(value) {
-
-                        var e = document.getElementById("airport_name");
-                        var airport = e.innerText;
-
-                        var csvFileName = "";
-                        if (value == 1) {
-                            csvFileName = "arr_delay_airport.csv";
-                        }
-                        else {
-                            csvFileName = "dept_delay_airport.csv";
-                        }
-
-                        d3.csv(csvFileName, function(error, csv) {
-                            var data = d3.nest()
-                                    .key(function(d) {
-                                return d.Date;
-                            })
-                                    .rollup(function(d) {
-                                return d[0][airport];
-                            })
-                                    .map(csv);
-
-                            var color = d3.scale.quantile()
-                                    .domain(d3.extent(csv, function(d) {
-                                return d[airport];
-                            }))
-                                    .range(d3.range(11).map(function(d) {
-                                return "q" + d + "-11";
-                            }));
-
-                            rect.filter(function(d) {
-                                return d in data;
-                            })
-                                    .attr("class", function(d) {
-                                return "day " + color(data[d]);
-                            })
-                                    .select("title")
-                                    .text(function(d) {
-                                return d + ": " + percent(data[d]);
-                            });
-
-                            //  Tooltip
-                            rect.on("mouseover", mouseover);
-                            rect.on("mouseout", mouseout);
-
-                            function mouseover(d) {
-                                tooltip.style("visibility", "visible");
-                                var percent_data = (data[d] !== undefined) ? (data[d]) : (0);
-                                var purchase_text = d + ": " + percent_data;
-
-                                tooltip.transition()
-                                        .duration(200)
-                                        .style("opacity", .9);
-                                tooltip.html(purchase_text)
-                                        .style("left", (d3.event.pageX) + 30 + "px")
-                                        .style("top", (d3.event.pageY) + "px");
-                            }
-                            function mouseout(d) {
-                                tooltip.transition()
-                                        .duration(500)
-                                        .style("opacity", 0);
-                                var $tooltip = $("#tooltip");
-                                $tooltip.empty();
-                            }
-                        }
-                        );
-                    }
-
-                    function dayTitle(t0) {
-                        return t0.toString().split(" ")[2];
-                    }
-                    function monthTitle(t0) {
-                        return t0.toLocaleString("en-us", {month: "long"});
-                    }
-                    function yearTitle(t0) {
-                        return t0.toString().split(" ")[3];
-                    }
-
-        </script>
-
-    </body>
 </html>
