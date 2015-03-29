@@ -17,7 +17,7 @@ function generateCharts(){
     //count inconsistent (0) for the count not needed
     //color hardcode for bubblechart in dc.js
     //put legend for dc.js 
-     d3.csv('final.csv',function(data){
+     d3.csv('FINAL.csv',function(data){
         //read the csv file
         var emissionArray = [];
         var distanceArray = [];
