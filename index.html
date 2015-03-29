@@ -101,9 +101,7 @@
                         <a href="index.html"><i class="fa fa-fw fa-dashboard"></i>Dashboard</a>
                     </li>
                 
-                    <li>
-                        <a href="table1.html"><i class="fa fa-fw fa-table"></i> Table</a>
-                    </li>
+                    
                  </ul>
             </div>
             <!-- /.navbar-collapse -->
@@ -264,8 +262,12 @@
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-circle fa-fw"></i>Emission vs Distance by Airline Bubble Chart <a href="#dc-airline-bubble" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
                                 </a>
-                                    <span><a href="javascript:airlineBubbleChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset </a>    
-                                    </span></h3>
+                                    <span><a href="javascript:airlineBubbleChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm" >Reset </a>
+                                          <a id="aboutbtn" class="btn btn-default btn-sm" >About </a>
+                                       
+                                    </span>  
+                                </h3>
+                               
                             </div>
                             <div class="panel-body">
                                 <div id="dc-airline-bubble"></div>
@@ -280,7 +282,8 @@
                             <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i>Emission By Airline Column Chart <a href="#dc-airline-emission" data-toggle="collapse" class="btn btn-sm btn-default minimize-box">
                                     <i class="fa fa-minus fa-fw"></i>
                                 </a> 
-                                <a href="javascript:airlineEmissionChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset</a>        
+                                <a href="javascript:airlineEmissionChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset</a>
+                                <a id="aboutbtn1" class="btn btn-default btn-sm">About</a>
                             </h3>
                         </div>
                         <div class="panel-body">
@@ -299,7 +302,7 @@
                                 <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i>Distance by Airline Column Chart <a href="#dc-airline-distance" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
                                 </a> 
                                     <a href="javascript:airlineDistanceChart.filterAll();dc.redrawAll();" class="btn btn-default btn-sm">Reset</a>
-                                    <a href="javascript:;" class="btn btn-default btn-sm">About</a>
+                                     <a id="aboutbtn2" class="btn btn-default btn-sm">About</a>
                                 </h3>
                             </div>
                             <div class="panel-body">
@@ -315,7 +318,7 @@
                             <div class="panel-heading">
                                 <h3 class="panel-title"><i class="fa fa-line-chart fa-fw"></i>Profit Sensitivity Analysis by Airline Composite Line Chart <a href="#dc-airline-compositeLine" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
                                 </a>
-                                       
+                                <a id="aboutbtn3" class="btn btn-default btn-sm">About</a>       
                                 </h3>
                             </div>
                             <div class="panel-body">
@@ -331,22 +334,23 @@
                     <div class="panel panel-info">
                         <div class="panel-heading">
                             <h3 class="panel-title"><i class="fa fa-fw fa-table"></i>Data Table 
-                            <a href="#dc-table-graph" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
-                                </a>          
+                            <a href="#test" data-toggle="collapse" class="btn btn-sm btn-default minimize-box"><i class="fa fa-minus fa-fw"></i>
+                                </a>
+                                <a id="aboutbtn4" class="btn btn-default btn-sm">About</a>      
                             </h3>
                         </div>
-                        <div class="panel-body">
-                            <div class="body collapse in">
+                        <div class="panel-body" >
+                                <div id="test">
                                     <table id="dc-table-graph" class="table table-bordered table-hover table-striped">
                                         <thead>
                                             <tr>
                                                 <th>Airline ID</th>
                                                 <th>Airline Name</th>
-                                                <th>Pre-Tax Profit</th>
-                                                <th>Tax</th>
-                                                <th>Post-Tax Profit</th>
-                                                <th>Emission</th>
-                                                <th>Distance</th>
+                                                <th>Pre-Tax Profit ($)</th>
+                                                <th>Tax ($)</th>
+                                                <th>Post-Tax Profit ($)</th>
+                                                <th>Emission (Tonnes)</th>
+                                                <th>Distance (Km)</th>
                                                 
                                                 
                                              </tr>
@@ -369,7 +373,102 @@
 
   
     <!-- /#wrapper -->
+   
+    <div id="aboutbubble" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">About</h4>
+                    </div>
+                    <div class="modal-body">
+                        Hello apple
 
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+     </div><!-- /.modal --><!-- /# -->
+     
+     <div id="aboutbubble1" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">About</h4>
+                    </div>
+                    <div class="modal-body">
+                        Hello apple
+
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+     </div><!-- /.modal --><!-- /# -->
+     
+     <div id="aboutbubble2" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">About</h4>
+                    </div>
+                    <div class="modal-body">
+                        Hello apple
+
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+     </div><!-- /.modal --><!-- /# -->
+     
+     <div id="aboutbubble3" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">About</h4>
+                    </div>
+                    <div class="modal-body">
+                        Hello apple
+
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+     </div><!-- /.modal --><!-- /# -->
+     
+     <div id="aboutbubble4" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">About</h4>
+                    </div>
+                    <div class="modal-body">
+                        Hello apple
+
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+     </div><!-- /.modal --><!-- /# -->
+     
     <!-- jQuery -->
     <script src="js/jquery.js"></script>
     <!-- Bootstrap Core JavaScript -->
@@ -381,8 +480,9 @@
     <script src="js/dc.js"></script>
     <script src="main.js"></script>
     <script>
+        
         generateCharts();
-
+        
     </script>
 </body>
 

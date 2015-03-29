@@ -17,7 +17,7 @@ function generateCharts(){
     //count inconsistent (0) for the count not needed
     //color hardcode for bubblechart in dc.js
     //put legend for dc.js 
-     d3.csv('FINAL.csv',function(data){
+     d3.csv('final.csv',function(data){
         //read the csv file
         var emissionArray = [];
         var distanceArray = [];
@@ -221,10 +221,14 @@ function generateCharts(){
         var airlineAfterTaxGroup = airlineAfterTaxDimension.group().reduceSum(function(d){return d.afterTax;});
         
         function plotAirlineCount(){
+           
             airlineCount = dc.numberDisplay('#dc-airline-count');
             airlineCount.group(airlineEmissionGroup).valueAccessor(function(d){return airlineEmissionDimension.top('Infinity').length;}).formatNumber(d3.format(".0f"));
+            alert("in airplane");
+            
         }
         function plotDistanceCount(){
+            
             distanceCount = dc.numberDisplay('#dc-distance-count');
             var distanceSum = 0;
             var airlineArray =[];
@@ -238,6 +242,9 @@ function generateCharts(){
                 };
                 return distanceSum;
             });
+            alert("in distance");
+            alert(airlineArray.length)
+            alert("distanceSum")
         }
         function plotEmissionCount(){
             emissionCount = dc.numberDisplay('#dc-emission-count');
@@ -251,6 +258,9 @@ function generateCharts(){
                 }
                 return emissionSum;
             });
+            alert("in emission");
+            alert(airlineArray.length);
+            
         }
         function plotProfitCount(){
             profitCount = dc.numberDisplay('#dc-profit-count');
@@ -263,6 +273,8 @@ function generateCharts(){
                 }
                 return profitSum;
             });
+            alert("in profit");
+            alert(airlineArray.length);
         }
         
         airlineEmissionChart.width(990)
@@ -481,25 +493,26 @@ function generateCharts(){
                 },
                
                 function(d) {
-                    return  "$"+numberFormat(d.profit);
+                    return  numberFormat(d.profit);
                 },
                 function(d) {
-                    return "$"+numberFormat(d.tax);
+                    return numberFormat(d.tax);
                 },
                 function(d){
-                    return "$"+numberFormat(d.afterTax);
+                    return numberFormat(d.afterTax);
                 },
                 function(d){
                     return numberFormat(d.emission);
                 },
                 function(d) {
                     return numberFormat(d.distance);
-                },
+                }
                 ])
                 .sortBy(function(d) {
-                        return d.emisson;
+                        return numberFormat(d.emission);
                 })
-                .order(d3.ascending);
+               
+         dataTable.ordering(function(d){d.value}) ;     
         
         
         
@@ -507,11 +520,60 @@ function generateCharts(){
         //bind the event
         airlineEmissionChart.on('filtered',function(){
             plotAirlineCount();
-            plotDistanceCount();
-            plotEmissionCount();
-            plotProfitCount();
-            dc.redrawAll();
+            dc.renderAll();
+            //plotDistanceCount();
+            //plotEmissionCount();
+            //plotProfitCount();
+            //dc.redrawAll();
         });
+        
+        $('#aboutbtn').on('click',function(){
+            
+            var options = {
+                "backdrop" :true,
+                "show":true
+            }
+            
+             $('#aboutbubble').modal(options);
+        })
+         $('#aboutbtn1').on('click',function(){
+            
+            var options = {
+                "backdrop" :true,
+                "show":true
+            }
+            
+             $('#aboutbubble1').modal(options);
+        })
+         $('#aboutbtn2').on('click',function(){
+            
+            var options = {
+                "backdrop" :true,
+                "show":true
+            }
+            
+             $('#aboutbubble2').modal(options);
+        })
+         $('#aboutbtn3').on('click',function(){
+            
+            var options = {
+                "backdrop" :true,
+                "show":true
+            }
+            
+             $('#aboutbubble3').modal(options);
+        })
+         $('#aboutbtn4').on('click',function(){
+            
+            var options = {
+                "backdrop" :true,
+                "show":true
+            }
+            
+             $('#aboutbubble4').modal(options);
+        })
+
+        
         
         /*airlineDistanceChart.on('filtered',function(){
             plotAirlineCount();
