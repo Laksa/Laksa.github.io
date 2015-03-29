@@ -17,7 +17,7 @@ function generateCharts(){
     //count inconsistent (0) for the count not needed
     //color hardcode for bubblechart in dc.js
     //put legend for dc.js 
-     d3.csv('FINAL.csv',function(data){
+     d3.csv('final.csv',function(data){
         //read the csv file
         var emissionArray = [];
         var distanceArray = [];
@@ -224,7 +224,7 @@ function generateCharts(){
            
             airlineCount = dc.numberDisplay('#dc-airline-count');
             airlineCount.group(airlineEmissionGroup).valueAccessor(function(d){return airlineEmissionDimension.top('Infinity').length;}).formatNumber(d3.format(".0f"));
-            alert("in airplane");
+            
             
         }
         function plotDistanceCount(){
@@ -242,9 +242,7 @@ function generateCharts(){
                 };
                 return distanceSum;
             });
-            alert("in distance");
-            alert(airlineArray.length)
-            alert("distanceSum")
+           
         }
         function plotEmissionCount(){
             emissionCount = dc.numberDisplay('#dc-emission-count');
@@ -258,8 +256,7 @@ function generateCharts(){
                 }
                 return emissionSum;
             });
-            alert("in emission");
-            alert(airlineArray.length);
+          
             
         }
         function plotProfitCount(){
@@ -273,8 +270,7 @@ function generateCharts(){
                 }
                 return profitSum;
             });
-            alert("in profit");
-            alert(airlineArray.length);
+          
         }
         
         airlineEmissionChart.width(990)
